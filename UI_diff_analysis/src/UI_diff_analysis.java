@@ -91,7 +91,7 @@ public class UI_diff_analysis {
 					for(OWLAnnotationAssertionAxiom ann_ax: annotation_assertion_axs) {
 						OWLAnnotation ann = ann_ax.getAnnotation();
 						
-						System.out.println("the annotation: " + ann);
+						//System.out.println("the annotation: " + ann);
 						
 						OWLLiteral literal = (OWLLiteral) ann.getValue();
 						String literalString = literal.getLiteral();
@@ -121,11 +121,11 @@ public class UI_diff_analysis {
 					for(OWLAnnotationAssertionAxiom ann_ax: annotation_assertion_axs) {
 						OWLAnnotation ann = ann_ax.getAnnotation();
 						
-						System.out.println("the annotation: " + ann);
+						//System.out.println("the annotation: " + ann);
 						
 						OWLLiteral literal = (OWLLiteral) ann.getValue();
 						String literalString = literal.getLiteral();
-						System.out.println("the current literalString: " + literalString);
+						//System.out.println("the current literalString: " + literalString);
 						if(literalString.contains("Focus object property")) {
 							total_focus_properties_1.add(entity.asOWLObjectProperty());
 						}
@@ -190,7 +190,7 @@ public class UI_diff_analysis {
 					for(OWLAnnotationAssertionAxiom ann_ax: annotation_assertion_axs) {
 						OWLAnnotation ann = ann_ax.getAnnotation();
 						
-						System.out.println("the annotation: " + ann);
+						//System.out.println("the annotation: " + ann);
 						
 						OWLLiteral literal = (OWLLiteral) ann.getValue();
 						String literalString = literal.getLiteral();
@@ -220,11 +220,11 @@ public class UI_diff_analysis {
 					for(OWLAnnotationAssertionAxiom ann_ax: annotation_assertion_axs) {
 						OWLAnnotation ann = ann_ax.getAnnotation();
 						
-						System.out.println("the annotation: " + ann);
+						//System.out.println("the annotation: " + ann);
 						
 						OWLLiteral literal = (OWLLiteral) ann.getValue();
 						String literalString = literal.getLiteral();
-						System.out.println("the current literalString: " + literalString);
+						//System.out.println("the current literalString: " + literalString);
 						if(literalString.contains("Focus object property")) {
 							total_focus_properties_2.add(entity.asOWLObjectProperty());
 						}
@@ -406,15 +406,15 @@ public class UI_diff_analysis {
 		
 		
 		
-		System.out.println("--- Getting stats of ontologies ---"); 
-		//String filePath1 = args[0];
+		System.out.println("--- Analysing the differences between ontologies ---"); 
+		String filePath1 = args[0];
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/Subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-before-grouping-subontology-v.14.7.owl";		
-		String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201907-intl201901/witness_complete_1.owl";
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201907-intl201901/witness_complete_1.owl";
 		
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_sct-international_20170731-subontology.owl";
 		System.out.println("--------------Ontology 1 file name: " + filePath1 +"--------------"); 
-		//String filePath2 = args[1];
-		String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201901-intl201807/witness_complete_1.owl";
+		String filePath2 = args[1];
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201901-intl201807/witness_complete_1.owl";
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-subontology-v.14.7.owl";
 		System.out.println("--------------Ontology 2 file name: " + filePath2 +"--------------"); 
 		//String filePath3 = args[2];
