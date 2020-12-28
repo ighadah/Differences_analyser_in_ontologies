@@ -38,14 +38,14 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 
-public class UI_diff_analysis {
+public class UI_diff_analysis_2 {
 	
 	
 	
 	
 	
 	//Get signature stats by reading the rdf comments
-		public void analyse_diffs(String filePath_1, String filePath_2, String file_1_version, String file_2_version) throws Exception {
+		public void analyse_diffs(String filePath_1, String filePath_2, String filePath_3, String filePath_4,String file_1_version, String file_2_version) throws Exception {
 			OWLOntologyManager manager1 = OWLManager.createOWLOntologyManager();
 			
 			File file1 = new File(filePath_1);
@@ -70,6 +70,33 @@ public class UI_diff_analysis {
 			System.out.println("the witnesses_2 axioms size: " + witnesses_2.getLogicalAxiomCount());
 			System.out.println("the witnesses_2 classes size: " + witnesses_2.getClassesInSignature().size());
 			System.out.println("the witnesses_2 properties size: " + witnesses_2.getObjectPropertiesInSignature().size());
+			
+			
+			OWLOntologyManager manager3 = OWLManager.createOWLOntologyManager();
+			
+			File file3 = new File(filePath_3);
+			IRI iri3 = IRI.create(file3);
+			OWLOntology Subontology_1 = manager3.loadOntologyFromOntologyDocument(new IRIDocumentSource(iri3),
+					new OWLOntologyLoaderConfiguration().setLoadAnnotationAxioms(true));
+			
+			
+			System.out.println("the Subontology_1 axioms size: " + Subontology_1.getLogicalAxiomCount());
+			System.out.println("the Subontology_1 classes size: " + Subontology_1.getClassesInSignature().size());
+			System.out.println("the Subontology_1 properties size: " + Subontology_1.getObjectPropertiesInSignature().size());
+			
+			
+			OWLOntologyManager manager4 = OWLManager.createOWLOntologyManager();
+			
+			File file4 = new File(filePath_4);
+			IRI iri4 = IRI.create(file4);
+			OWLOntology Subontology_2 = manager4.loadOntologyFromOntologyDocument(new IRIDocumentSource(iri4),
+					new OWLOntologyLoaderConfiguration().setLoadAnnotationAxioms(true));
+			
+			
+			System.out.println("the Subontology_2 axioms size: " + Subontology_2.getLogicalAxiomCount());
+			System.out.println("the Subontology_2 classes size: " + Subontology_2.getClassesInSignature().size());
+			System.out.println("the Subontology_2 properties size: " + Subontology_2.getObjectPropertiesInSignature().size());
+			
 			
 			
 			
@@ -589,16 +616,45 @@ public class UI_diff_analysis {
 				 
 				//first old
 				 Map<String, Collection<OWLAxiom>> old_version_axioms = new HashMap<>();
+				 
 				 Collection<OWLAxiom> old_axiom_s = cl_focus_old_axioms_1.get(cl);
+				 //get from the first subontology the axiom of the current cl and 
+				 
 				 if(!old_axiom_s.isEmpty()) {
-				 old_version_axioms.put(file_1_version, old_axiom_s);
+					 
+					 
+					 Collection<OWLSubClassOfAxiom> old_subof_axioms_in_subontology = Subontology_1.getSubClassAxiomsForSubClass(cl);
+					 if(!old_subof_axioms_in_subontology.isEmpty()) {
+					 Collection<OWLAxiom> old_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(old_subof_axioms_in_subontology);
+					 old_version_axioms.put(file_1_version + "_Axiom in Subontology", old_subof_axioms_in_subontology_copy);
+					 } 
+					 Collection<OWLEquivalentClassesAxiom> old_equiv_subof_axioms_in_subontology = Subontology_1.getEquivalentClassesAxioms(cl);
+					 if(!old_equiv_subof_axioms_in_subontology.isEmpty()) {
+						 Collection<OWLAxiom> old_equiv_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(old_equiv_subof_axioms_in_subontology);
+						 old_version_axioms.put(file_1_version + "_Axiom in Subontology", old_equiv_subof_axioms_in_subontology_copy);
+						 } 
+					 
+					 old_version_axioms.put(file_1_version, old_axiom_s);
 				 focus_classes_version_axioms.put(cl, old_version_axioms);
 				 }
-				
+				 
 				 //second new
 				 Map<String, Collection<OWLAxiom>> new_version_axioms = new HashMap<>();
 				 Collection<OWLAxiom> new_axiom_s = cl_focus_new_axioms_2.get(cl);
 				 if(!new_axiom_s.isEmpty()) {
+					 
+					 Collection<OWLSubClassOfAxiom> new_subof_axioms_in_subontology = Subontology_2.getSubClassAxiomsForSubClass(cl);
+					 if(!new_subof_axioms_in_subontology.isEmpty()) {
+					 Collection<OWLAxiom> new_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(new_subof_axioms_in_subontology);
+					 new_version_axioms.put(file_2_version + "_Axiom in Subontology", new_subof_axioms_in_subontology_copy);
+					 } 
+					 Collection<OWLEquivalentClassesAxiom> new_equiv_subof_axioms_in_subontology = Subontology_2.getEquivalentClassesAxioms(cl);
+					 if(!new_equiv_subof_axioms_in_subontology.isEmpty()) {
+						 Collection<OWLAxiom> new_equiv_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(new_equiv_subof_axioms_in_subontology);
+						 new_version_axioms.put(file_2_version + "_Axiom in Subontology", new_equiv_subof_axioms_in_subontology_copy);
+						 } 
+					 
+					 
 				 new_version_axioms.put(file_2_version, new_axiom_s);
 				 focus_classes_version_axioms.put(cl, new_version_axioms);
 				 }
@@ -692,6 +748,21 @@ public class UI_diff_analysis {
 						 Map<String, Collection<OWLAxiom>> old_version_axioms = new HashMap<>();
 						 Collection<OWLAxiom> old_axiom_s = cl_supporting_old_axioms_1.get(cl);
 						 if(!old_axiom_s.isEmpty()) {
+							 
+							 
+							 
+							 Collection<OWLSubClassOfAxiom> old_subof_axioms_in_subontology = Subontology_1.getSubClassAxiomsForSubClass(cl);
+							 if(!old_subof_axioms_in_subontology.isEmpty()) {
+							 Collection<OWLAxiom> old_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(old_subof_axioms_in_subontology);
+							 old_version_axioms.put(file_1_version + "_Axiom in Subontology", old_subof_axioms_in_subontology_copy);
+							 } 
+							 Collection<OWLEquivalentClassesAxiom> old_equiv_subof_axioms_in_subontology = Subontology_1.getEquivalentClassesAxioms(cl);
+							 if(!old_equiv_subof_axioms_in_subontology.isEmpty()) {
+								 Collection<OWLAxiom> old_equiv_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(old_equiv_subof_axioms_in_subontology);
+								 old_version_axioms.put(file_1_version + "_Axiom in Subontology", old_equiv_subof_axioms_in_subontology_copy);
+								 } 
+							 
+							 
 						 old_version_axioms.put(file_1_version, old_axiom_s);
 						 supporting_classes_version_axioms.put(cl, old_version_axioms);
 						 }
@@ -701,6 +772,19 @@ public class UI_diff_analysis {
 						 Map<String, Collection<OWLAxiom>> new_version_axioms = new HashMap<>();
 						 Collection<OWLAxiom> new_axiom_s = cl_supporting_new_axioms_2.get(cl);
 						 if(!new_axiom_s.isEmpty()) {
+							 
+							 Collection<OWLSubClassOfAxiom> new_subof_axioms_in_subontology = Subontology_2.getSubClassAxiomsForSubClass(cl);
+							 if(!new_subof_axioms_in_subontology.isEmpty()) {
+							 Collection<OWLAxiom> new_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(new_subof_axioms_in_subontology);
+							 new_version_axioms.put(file_2_version + "_Axiom in Subontology", new_subof_axioms_in_subontology_copy);
+							 } 
+							 Collection<OWLEquivalentClassesAxiom> new_equiv_subof_axioms_in_subontology = Subontology_2.getEquivalentClassesAxioms(cl);
+							 if(!new_equiv_subof_axioms_in_subontology.isEmpty()) {
+								 Collection<OWLAxiom> new_equiv_subof_axioms_in_subontology_copy = new HashSet<OWLAxiom>(new_equiv_subof_axioms_in_subontology);
+								 new_version_axioms.put(file_2_version + "_Axiom in Subontology", new_equiv_subof_axioms_in_subontology_copy);
+								 }
+							 
+							 
 						 new_version_axioms.put(file_2_version, new_axiom_s);
 						 supporting_classes_version_axioms.put(cl, new_version_axioms);
 						 }
@@ -793,7 +877,7 @@ public class UI_diff_analysis {
 		//MRI
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_2.owl";
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_sct-international_20170731-subontology.owl";
-		System.out.println("--------------Ontology 1 file name: " + filePath1 +"--------------"); 
+		System.out.println("--------------Witnesses Ontology 1 file name: " + filePath1 +"--------------"); 
 		String filePath2 = args[1];
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201901-intl201807/witness_complete_1.owl";
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-subontology-v.14.7.owl";
@@ -801,14 +885,37 @@ public class UI_diff_analysis {
 		//MRI
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_1.owl";
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_1.owl";
-		System.out.println("--------------Ontology 2 file name: " + filePath2 +"--------------"); 
+		System.out.println("--------------Witnesses Ontology 2 file name: " + filePath2 +"--------------"); 
 		
-		String o_1_version = args[2];
+		
+		String filePath3 = args[2];
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/Subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-before-grouping-subontology-v.14.7.owl";		
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201907-intl201901/witness_complete_1.owl";
+		
+		
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_2.owl";
+		
+		//MRI
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_2.owl";
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_sct-international_20170731-subontology.owl";
+		System.out.println("--------------SubOntology 1 file name: " + filePath3 +"--------------"); 
+		String filePath4 = args[3];
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201901-intl201807/witness_complete_1.owl";
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-subontology-v.14.7.owl";
+		
+		//MRI
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_1.owl";
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_1.owl";
+		System.out.println("--------------SubOntology 2 file name: " + filePath4 +"--------------"); 
+		
+		
+		
+		String o_1_version = args[4];
 		//String o_1_version = "sct-intl201701";
 		//String o_1_version = "sct-intl201707";
 		//String o_2_version = "sct-intl201801";
 		//String filePath3 = args[2];
-		String o_2_version = args[3];
+		String o_2_version = args[5];
 		//String filePath3 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/testing-lethe-ui-diff";
 		//System.out.println("--------------Save path is: " + filePath3 +"--------------"); 
 		//String add_grouper = args[3]; 
@@ -818,9 +925,9 @@ public class UI_diff_analysis {
 
 		
 		long startTime1 = System.currentTimeMillis(); 
-		UI_diff_analysis a = new UI_diff_analysis();
+		UI_diff_analysis_2 a = new UI_diff_analysis_2();
 		//diff.using_ui_diff(filePath1, filePath2, filePath3);
-		a.analyse_diffs(filePath1, filePath2, o_1_version, o_2_version);
+		a.analyse_diffs(filePath1, filePath2, filePath3, filePath4, o_1_version, o_2_version);
 		long endTime1 = System.currentTimeMillis();
 		System.out.println("Total Duration = " + (endTime1 - startTime1) + "millis");
 
