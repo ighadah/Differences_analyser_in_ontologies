@@ -14,6 +14,8 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.semanticweb.HermiT.Configuration;
+import org.semanticweb.HermiT.Reasoner;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.io.IRIDocumentSource;
 import org.semanticweb.owlapi.model.AxiomType;
@@ -23,16 +25,22 @@ import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLEntity;
 import org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom;
 import org.semanticweb.owlapi.model.OWLEquivalentObjectPropertiesAxiom;
 import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLLogicalAxiom;
+import org.semanticweb.owlapi.model.OWLObjectIntersectionOf;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectSomeValuesFrom;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
 import org.semanticweb.owlapi.model.OWLSubObjectPropertyOfAxiom;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.LinkedListMultimap;
@@ -236,10 +244,11 @@ public class UI_diff_analysis_2 {
 						OWLAnnotation ann = ann_ax.getAnnotation();
 						
 						//System.out.println("the annotation: " + ann);
-						
-						OWLLiteral literal = (OWLLiteral) ann.getValue();
-						String literalString = literal.getLiteral();
-						//System.out.println("the current literalString: " + literalString);
+						if(ann.getValue().isLiteral()) {
+						//OWLLiteral literal = (OWLLiteral) ann.getValue();
+							//OWLLiteral literal = ann.getValue().asLiteral();
+						String literalString = ann.getValue().asLiteral().toString();
+						System.out.println("the current literalString: " + literalString);
 						if(literalString.contains("Focus class")) {
 							total_focus_classes_2.add(entity.asOWLClass());
 						}if(literalString.contains("Focus class, defined in the original ontology")) {
@@ -259,6 +268,7 @@ public class UI_diff_analysis_2 {
 						}
 						
 					}
+				}
 				}else if(entity.isOWLObjectProperty()) {
 					total_properties_2.add(entity.asOWLObjectProperty());
 					Set<OWLAnnotationAssertionAxiom> annotation_assertion_axs = witnesses_2.getAnnotationAssertionAxioms(entity.getIRI());
@@ -857,8 +867,80 @@ public class UI_diff_analysis_2 {
 		
 		
 	
-		
+		//Create an axiom to check if it's entailed by a ontology
+		public void create_axiom(String filePath) throws OWLOntologyCreationException {
+			
+			OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+			
+			File file1 = new File(filePath);
+			IRI iri1 = IRI.create(file1);
+			OWLOntology O = manager.loadOntologyFromOntologyDocument(new IRIDocumentSource(iri1),
+					new OWLOntologyLoaderConfiguration().setLoadAnnotationAxioms(true));
+			
+			
+			System.out.println("the O axioms size: " + O.getLogicalAxiomCount());
+			System.out.println("the O classes size: " + O.getClassesInSignature().size());
+			System.out.println("the O properties size: " + O.getObjectPropertiesInSignature().size());
+			
+			
+			
+			OWLOntologyManager manager1 = OWLManager.createOWLOntologyManager();
+			OWLDataFactory df = manager1.getOWLDataFactory();
+			
+			OWLClass lhs_cl = df.getOWLClass(IRI.create("http://snomed.info/id/699853005"));
+			OWLClass rhs_cl_1 = df.getOWLClass(IRI.create("http://snomed.info/id/43162008"));
+			OWLObjectProperty role_group = df.getOWLObjectProperty(IRI.create("http://snomed.info/id/609096000"));
+			OWLObjectProperty rhs_pr_1 = df.getOWLObjectProperty(IRI.create("http://snomed.info/id/116676008"));
+			OWLClass rhs_cl_fl_1 = df.getOWLClass(IRI.create("http://snomed.info/id/416286003"));
+			OWLObjectSomeValuesFrom obsv_1 = df.getOWLObjectSomeValuesFrom(rhs_pr_1, rhs_cl_fl_1);
+			OWLObjectProperty rhs_pr_2 = df.getOWLObjectProperty(IRI.create("http://snomed.info/id/246454002"));
+			OWLClass rhs_cl_fl_2 = df.getOWLClass(IRI.create("http://snomed.info/id/255399007"));
+			OWLObjectSomeValuesFrom obsv_2 = df.getOWLObjectSomeValuesFrom(rhs_pr_2, rhs_cl_fl_2);
+			OWLObjectProperty rhs_pr_3 = df.getOWLObjectProperty(IRI.create("http://snomed.info/id/363698007"));
+			OWLClass rhs_cl_fl_3 = df.getOWLClass(IRI.create("http://snomed.info/id/419500006"));
+			OWLObjectSomeValuesFrom obsv_3 = df.getOWLObjectSomeValuesFrom(rhs_pr_3, rhs_cl_fl_3);
+			OWLObjectProperty rhs_pr_4 = df.getOWLObjectProperty(IRI.create("http://snomed.info/id/370135005"));
+			OWLClass rhs_cl_fl_4 = df.getOWLClass(IRI.create("http://snomed.info/id/308490002"));
+			OWLObjectSomeValuesFrom obsv_4 = df.getOWLObjectSomeValuesFrom(rhs_pr_4, rhs_cl_fl_4);
+			
+			Set<OWLClassExpression> obsv_fillers = new HashSet<>();
+			obsv_fillers.add(obsv_1);
+			obsv_fillers.add(obsv_2);
+			obsv_fillers.add(obsv_3);
+			obsv_fillers.add(obsv_4);
+			
+			OWLObjectIntersectionOf object_intersection = df.getOWLObjectIntersectionOf(obsv_fillers);
+			OWLObjectSomeValuesFrom obsv = df.getOWLObjectSomeValuesFrom(role_group, object_intersection);
+			Set<OWLClassExpression> rhs_exp = new HashSet<>();
+			rhs_exp.add(obsv);
+			rhs_exp.add(rhs_cl_1);
+			OWLObjectIntersectionOf object_inter_rhs = df.getOWLObjectIntersectionOf(rhs_exp);
+			OWLSubClassOfAxiom gci_subof = df.getOWLSubClassOfAxiom(object_inter_rhs, lhs_cl);
+			
+			//check the axiom
+			
+			System.out.println("the created ax: gci_subof: " + gci_subof);
+			
+			if(checkEntailement(gci_subof, O)){
+				System.out.println("the gci direction is not a witness");
+			}
+		}
 	
+		public boolean checkEntailement(OWLLogicalAxiom logicalAxiom, OWLOntology o) {
+			//OWLReasonerFactory fac = new Reasoner.ReasonerFactory();
+			//OWLReasoner hermit_reasoner = fac.createReasoner(o);
+			Configuration c = new Configuration();
+			OWLReasoner reasoner = new Reasoner(c,o);
+			if(reasoner.isEntailed(logicalAxiom)) {
+				System.out.println("The axiom is entailed by O");
+				reasoner.dispose();
+				return true;
+			}else {
+				System.out.println("The axiom is NOT entailed by O");
+				reasoner.dispose();
+				return false;
+			}
+		}
 	
 	public static void main(String[] args)
 			throws Exception {
@@ -867,7 +949,31 @@ public class UI_diff_analysis_2 {
 		
 		
 		System.out.println("--- Analysing the differences between ontologies ---"); 
-		String filePath1 = args[0];
+		//String filePath1 = args[0];
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/Subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-before-grouping-subontology-v.14.7.owl";		
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201907-intl201901/witness_complete_1.owl";
+		
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/data-source/sct_intl_20190131.owl";
+		
+		
+		
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_2.owl";
+		
+		//MRI
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_2.owl";
+		//String filePath1 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_sct-international_20170731-subontology.owl";
+		//System.out.println("--------------Witnesses Ontology 1 file name: " + filePath1 +"--------------"); 
+		//String filePath2 = args[1];
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201901-intl201807/witness_complete_1.owl";
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-subontology-v.14.7.owl";
+		
+		//MRI
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_1.owl";
+		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_1.owl";
+		//System.out.println("--------------Witnesses Ontology 2 file name: " + filePath2 +"--------------"); 
+		
+		
+		//String filePath3 = args[2];
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/Subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-before-grouping-subontology-v.14.7.owl";		
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201907-intl201901/witness_complete_1.owl";
 		
@@ -877,45 +983,30 @@ public class UI_diff_analysis_2 {
 		//MRI
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_2.owl";
 		//String filePath1 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_sct-international_20170731-subontology.owl";
-		System.out.println("--------------Witnesses Ontology 1 file name: " + filePath1 +"--------------"); 
-		String filePath2 = args[1];
+		//System.out.println("--------------SubOntology 1 file name: " + filePath3 +"--------------"); 
+		//String filePath4 = args[3];
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201901-intl201807/witness_complete_1.owl";
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-subontology-v.14.7.owl";
 		
 		//MRI
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_1.owl";
 		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_1.owl";
-		System.out.println("--------------Witnesses Ontology 2 file name: " + filePath2 +"--------------"); 
+		//System.out.println("--------------SubOntology 2 file name: " + filePath4 +"--------------"); 
 		
 		
-		String filePath3 = args[2];
-		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/Subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-before-grouping-subontology-v.14.7.owl";		
-		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201907-intl201901/witness_complete_1.owl";
-		
-		
-		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_2.owl";
-		
-		//MRI
-		//String filePath1 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_2.owl";
-		//String filePath1 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_sct-international_20170731-subontology.owl";
-		System.out.println("--------------SubOntology 1 file name: " + filePath3 +"--------------"); 
-		String filePath4 = args[3];
-		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-sct-intl201901-intl201807/witness_complete_1.owl";
-		//String filePath2 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/era_sct_intl_20200904_new_IRI.owl_snomed_ct_australian.owl_20171231-subontology-v.14.7.owl";
-		
-		//MRI
-		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/MRI/MRI-sct-intl201801-intl201707/MRI-sct-intl201801-intl201707/witness_complete_1.owl";
-		//String filePath2 = "/Users/ghadahalghamdi/Documents/IJCAI2021-results/sct-subontologies-comparisons/ERA/ERA-comparisons-module-common-sig/ERA-sct-intl201707-intl201701/ERA-sct-intl201707-intl201701/witness_complete_1.owl";
-		System.out.println("--------------SubOntology 2 file name: " + filePath4 +"--------------"); 
-		
-		
-		
-		String o_1_version = args[4];
+		//GO slim mouse
+		String filePath1 = "/Users/ghadahalghamdi/Documents/UI_diff_tools/UI_diff_goslim_mouse_view_subontology/witness_complete_1_subontology.owl";
+		String filePath2 = "/Users/ghadahalghamdi/Documents/UI_diff_tools/UI_diff_goslim_mouse_view_subontology/witness_complete_2_view.owl";
+		String filePath3 = "/Users/ghadahalghamdi/Documents/Ontologies_evaluation_chapter/Go-ontology/Comparison-1/goslim_mouse.owl_go.owl_denormalised.owl_01012021_denormalised-before-grouping-subontology-v.14.10.owl";
+		String filePath4 = "/Users/ghadahalghamdi/Documents/Ontologies_evaluation_chapter/Go-ontology/Comparison-1/goslim_mouse.owl_go.owl_denormalised.owl_01012021_denormalised-before-grouping-subontology-v.14.10.owl";
+		String o_1_version = "01012021_denormalised_goslim_mouse";
+		String o_2_version = "01012021_denormalised_goslim_mouse";
+		//String o_1_version = args[4];
 		//String o_1_version = "sct-intl201701";
 		//String o_1_version = "sct-intl201707";
 		//String o_2_version = "sct-intl201801";
 		//String filePath3 = args[2];
-		String o_2_version = args[5];
+		//String o_2_version = args[5];
 		//String filePath3 = "/Users/ghadahalghamdi/Documents/Abstracted_def_based_subontologies/computed-sub-ontologies/updated-subontologies/testing-lethe-ui-diff";
 		//System.out.println("--------------Save path is: " + filePath3 +"--------------"); 
 		//String add_grouper = args[3]; 
@@ -928,6 +1019,7 @@ public class UI_diff_analysis_2 {
 		UI_diff_analysis_2 a = new UI_diff_analysis_2();
 		//diff.using_ui_diff(filePath1, filePath2, filePath3);
 		a.analyse_diffs(filePath1, filePath2, filePath3, filePath4, o_1_version, o_2_version);
+		//a.create_axiom(filePath1);
 		long endTime1 = System.currentTimeMillis();
 		System.out.println("Total Duration = " + (endTime1 - startTime1) + "millis");
 
